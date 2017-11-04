@@ -1,2 +1,2 @@
-# iTunesXMLReader
-A reader for iTunes exported XML file.
+# iTunesXMLParser
+A parser for iTunes exported XML file.

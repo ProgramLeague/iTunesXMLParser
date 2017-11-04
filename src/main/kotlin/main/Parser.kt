@@ -2,13 +2,36 @@ package main
 
 import org.eclipse.jetty.util.UrlEncoded
 import org.jdom2.Element
+import org.jdom2.input.SAXBuilder
+import org.jdom2.xpath.XPathFactory
 import util.Dict
 import util.Playlist
 import java.nio.file.Path
 import java.nio.file.Paths
 
 object Parser {
-	fun parseElement(element: Element, key: String): Element? {
+	fun parse(path: Path): List<Playlist> {
+		val document = SAXBuilder().build(path.toFile())
+		val xpathFactory = XPathFactory.instance()
+		val root = xpathFactory.compile("/plist/dict").evaluateFirst(document.rootElement) as Element
+
+		val dictsElement: List<Element> = parseElement(root, "Tracks")!!.children
+		val dicts = HashMap<Int, Dict>()
+
+		dictsElement.filter { it.name.contentEquals("dict") }
+				.map { parseDict(it) }
+				.forEach { dicts.put(it.id, it) }
+
+		val playlistsElement: List<Element> = parseElement(root, "Playlists")!!.children
+		val playlists = ArrayList<Playlist>()
+
+		playlistsElement.filter { it.name.contentEquals("dict") }
+				.mapTo(playlists) { parsePlaylist(it, dicts) }
+
+		return playlists
+	}
+
+	private fun parseElement(element: Element, key: String): Element? {
 		val children = element.children
 		for ((index, child) in children.withIndex()) {
 			if (child.name.contentEquals("key") && child.textTrim.contentEquals(key))
@@ -17,9 +40,7 @@ object Parser {
 		return null
 	}
 
-	private fun parseInt(input: String): Int {
-		return if (input.isEmpty()) 0 else Integer.parseInt(input)
-	}
+	private fun parseInt(input: String): Int = if (input.isEmpty()) 0 else Integer.parseInt(input)
 
 	private fun parseElementString(element: Element, key: String): String {
 		val parsed = parseElement(element, key)
@@ -35,7 +56,7 @@ object Parser {
 		return emptyPath
 	}
 
-	fun parseDict(dictElement: Element): Dict {
+	private fun parseDict(dictElement: Element): Dict {
 		return Dict(parseInt(parseElementString(dictElement, "Track ID")),
 				parseElementString(dictElement, "Name"),
 				parseElementString(dictElement, "Artist"),
@@ -45,7 +66,7 @@ object Parser {
 				parseLocation(parseElementString(dictElement, "Location")))
 	}
 
-	fun parsePlaylist(playlistElement: Element, dictMap: Map<Int, Dict>): Playlist {
+	private fun parsePlaylist(playlistElement: Element, dictMap: Map<Int, Dict>): Playlist {
 		val items = ArrayList<Dict>()
 
 		val parsed = parseElement(playlistElement, "Playlist Items")
