@@ -38,33 +38,39 @@ object MainClass {
 		else
 			toHandle.addAll(toHandleString.trim().replace(" ", "").split(",").map { it.toInt() })
 
-		println("Will copy out playlist No. ${toHandle.joinToString()}, continue? (y for yes): ")
+		println("Will copy out playlist No. `${toHandle.joinToString()}`, continue? (y for yes): ")
 		val yes = scanner.nextLine()
 		if (!(yes.contentEquals("y") || yes.contentEquals("yes"))) {
 			println("Canceled.")
 			System.exit(0)
 		}
-		println("Now copy out musics in ${toHandle.size} playlists into $targetPath...")
+		println("Now copy out musics in ${toHandle.size} playlists into `$targetPath`...")
+		var errors = 0
 		for (handling in toHandle) {
-			val handlingPlaylist = playlists[handling]
+			val handlingPlaylist = playlists[handling - 1]
 			val name = handlingPlaylist.name
 			val items = handlingPlaylist.items
 
-			println("\tCopying out ${handlingPlaylist.items.size} items in $name...")
+			println("\tCopying out ${handlingPlaylist.items.size} items in `$name`...")
 
 			val playlistPath = Paths.get("$targetPath/$name")
 
 			if (!Files.exists(playlistPath)) {
-				println("\t\tDirectory for $name not exist, created.")
+				println("\t\tDirectory for `$name` not exist, created.")
 				Files.createDirectories(playlistPath)
 			}
 			println("\t\tCopying out now...")
 			items.forEach {
-				Copy.copyFileToDirectory(it.path, targetPath)
+				try {
+					Copy.copyFileToDirectory(it.path, playlistPath)
+				} catch (e: Exception) {
+					System.err.println("\t\tError ` ${e.message}` occurred. Still copying.")
+					errors++
+				}
 			}
-			println("\t\tCopied items in $name")
+			println("\t\tFinish copied items in `$name`.")
 		}
-		println("Finished all copying task.")
+		println("Finished all copying task, ${if (errors == 0) "no" else errors.toString()} error(s) occurred.")
 	}
 
 	private fun inputValidPath(scanner: Scanner, condition: (Path) -> Boolean): Path {
