@@ -1,3 +1,5 @@
+@file:JvmName("Parser")
+
 package ray.eldath.ixp.main
 
 import org.eclipse.jetty.util.UrlEncoded
