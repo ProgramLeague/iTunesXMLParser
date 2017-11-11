@@ -1,4 +1,4 @@
-package tool
+package ray.eldath.ixp.tool
 
 import java.io.FileInputStream
 import java.io.FileOutputStream

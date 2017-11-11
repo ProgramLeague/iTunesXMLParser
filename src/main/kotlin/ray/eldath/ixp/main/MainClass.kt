@@ -1,7 +1,7 @@
-package main
+package ray.eldath.ixp.main
 
-import tool.Copy
-import util.Constants
+import ray.eldath.ixp.tool.Copy
+import ray.eldath.ixp.util.Constants
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -27,10 +27,10 @@ object MainClass {
 		println("Now parsing file $sourceFile ...")
 		val playlists = Parser.parse(sourceFile)
 
-		println("Found ${playlists.size} playlists: ")
+		println("Found ${playlists.size} playlist(s): ")
 		for ((index, playlist) in playlists.withIndex())
 			println("\t${index + 1}. ${playlist.name} has ${playlist.items.size} items")
-		println("Input those playlist you want to copy out, 0 for all, separated with comma(,): ")
+		println("Input those playlist(s) you want to copy out, 0 for all, separated with comma(,): ")
 		val toHandleString = scanner.nextLine()
 		val toHandle = ArrayList<Int>()
 		if (toHandleString.contentEquals("0"))

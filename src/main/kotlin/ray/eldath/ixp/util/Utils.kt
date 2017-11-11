@@ -1,4 +1,4 @@
-package util
+package ray.eldath.ixp.util
 
 import java.nio.file.Path
 

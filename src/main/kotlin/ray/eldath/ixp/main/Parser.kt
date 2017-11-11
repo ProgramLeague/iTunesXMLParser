@@ -1,11 +1,11 @@
-package main
+package ray.eldath.ixp.main
 
 import org.eclipse.jetty.util.UrlEncoded
 import org.jdom2.Element
 import org.jdom2.input.SAXBuilder
 import org.jdom2.xpath.XPathFactory
-import util.Dict
-import util.Playlist
+import ray.eldath.ixp.util.Dict
+import ray.eldath.ixp.util.Playlist
 import java.nio.file.Path
 import java.nio.file.Paths
 
