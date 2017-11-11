@@ -25,7 +25,7 @@ object MainClass {
 		}
 
 		println("Now parsing file $sourceFile ...")
-		val playlists = Parser.parse(sourceFile)
+		val playlists = parse(sourceFile)
 
 		println("Found ${playlists.size} playlist(s): ")
 		for ((index, playlist) in playlists.withIndex())
