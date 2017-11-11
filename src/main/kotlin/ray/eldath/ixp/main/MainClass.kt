@@ -2,15 +2,15 @@
 
 package ray.eldath.ixp.main
 
-import ray.eldath.ixp.tool.Copy
-import ray.eldath.ixp.util.Constants
+import ray.eldath.ixp.tool.copyFileToDirectory
+import ray.eldath.ixp.util.VERSION
 import java.nio.file.*
 import java.util.*
 import kotlin.collections.ArrayList
 
 fun main(args: Array<String>) {
 	val scanner = Scanner(System.`in`)
-	println("iTunesXMLParser - v${Constants.VERSION}")
+	println("iTunesXMLParser - v$VERSION")
 
 	println("Please input the location of the XML file you want to parse: ")
 	val sourceFile = inputValidPath(scanner, { path -> Files.exists(path) && path.toString().endsWith(".xml") })
@@ -60,7 +60,7 @@ fun main(args: Array<String>) {
 		println("\t\tCopying out now...")
 		items.forEach {
 			try {
-				Copy.copyFileToDirectory(it.path, playlistPath)
+				copyFileToDirectory(it.path, playlistPath)
 			} catch (e: Exception) {
 				System.err.println("\t\tError ` ${e.message}` occurred. Still copying.")
 				errors++
