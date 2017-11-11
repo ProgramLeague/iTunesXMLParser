@@ -41,7 +41,8 @@ private fun parseElement(element: Element, key: String): Element? {
 	return null
 }
 
-private fun parseInt(input: String): Int = if (input.isEmpty()) 0 else input.toInt()
+/// overwrites String.toInt in stdlib
+private fun String.toInt(): Int = if (isEmpty()) 0 else Integer.parseInt(this)
 private fun parseElementString(element: Element, key: String) = parseElement(element, key)?.textTrim ?: ""
 
 private val emptyPath: Path = Paths.get("")
@@ -52,13 +53,15 @@ private fun parseLocation(location: String): Path = when {
 	else -> emptyPath
 }
 
-private fun parseDict(dictElement: Element) = Dict(parseInt(parseElementString(dictElement, "Track ID")),
+fun String.toLocation() = parseLocation(this)
+
+private fun parseDict(dictElement: Element) = Dict(parseElementString(dictElement, "Track ID").toInt(),
 		parseElementString(dictElement, "Name"),
 		parseElementString(dictElement, "Artist"),
 		parseElementString(dictElement, "Album"),
 		parseElementString(dictElement, "Genre"),
-		parseInt(parseElementString(dictElement, "Rating")),
-		parseLocation(parseElementString(dictElement, "Location")))
+		parseElementString(dictElement, "Rating").toInt(),
+		parseElementString(dictElement, "Location").toLocation())
 
 private fun parsePlaylist(playlistElement: Element, dictMap: Map<Int, Dict>): Playlist {
 	val items = arrayListOf<Dict>()
@@ -66,9 +69,9 @@ private fun parsePlaylist(playlistElement: Element, dictMap: Map<Int, Dict>): Pl
 	val parsed = parseElement(playlistElement, "Playlist Items")
 	val itemsElement = parsed?.children ?: parseElement(playlistElement, "All Items")!!.children
 
-	itemsElement.mapTo(items) { dictMap[Integer.parseInt(parseElementString(it, "Track ID"))]!! }
+	itemsElement.mapTo(items) { dictMap[parseElementString(it, "Track ID").toInt()]!! }
 
-	return Playlist(parseInt(parseElementString(playlistElement, "Playlist ID")),
+	return Playlist(parseElementString(playlistElement, "Playlist ID").toInt(),
 			parseElementString(playlistElement, "Name"),
 			parseElementString(playlistElement, "Description"),
 			items)
