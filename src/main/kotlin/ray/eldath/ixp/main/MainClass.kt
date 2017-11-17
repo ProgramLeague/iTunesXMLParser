@@ -85,6 +85,8 @@ fun main(args: Array<String>) {
 		println("\t\tFinish copied items in `$name`.")
 	}
 	println("Finished all copying task, ${if (errors == 0) "no" else errors.toString()} error(s) occurred.")
+	println("Type ANYTHING and type ENTER to exit...")
+	scanner.next()
 }
 
 private inline fun inputValidPath(scanner: Scanner, condition: (Path) -> Boolean): Path {
