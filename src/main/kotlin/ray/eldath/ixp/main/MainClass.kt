@@ -4,7 +4,10 @@ package ray.eldath.ixp.main
 
 import ray.eldath.ixp.tool.copyFileToDirectory
 import ray.eldath.ixp.util.VERSION
-import java.nio.file.*
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.text.NumberFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -57,14 +60,27 @@ fun main(args: Array<String>) {
 			println("\t\tDirectory for `$name` not exist, created.")
 			Files.createDirectories(playlistPath)
 		}
-		println("\t\tCopying out now...")
-		items.forEach {
+		println("\t\tCopying out now... This may takes few minutes...")
+
+		val points = ArrayList<Int>()
+		val percentFormatter = NumberFormat.getPercentInstance()
+		percentFormatter.minimumFractionDigits = 1
+
+		val total = items.size.toDouble()
+		val step = (total - total / 9) / 3
+		points.add(step.toInt())
+		points.add((step * 2).toInt())
+		points.add((step * 3).toInt())
+
+		for ((index, item) in items.withIndex()) {
 			try {
-				copyFileToDirectory(it.path, playlistPath)
+				copyFileToDirectory(item.path, playlistPath)
 			} catch (e: Exception) {
 				System.err.println("\t\tError ` ${e.message}` occurred. Still copying.")
 				errors++
 			}
+			if (points.contains(index))
+				println("\t\t(${percentFormatter.format(index / total)}) finished. Still copying.")
 		}
 		println("\t\tFinish copied items in `$name`.")
 	}
