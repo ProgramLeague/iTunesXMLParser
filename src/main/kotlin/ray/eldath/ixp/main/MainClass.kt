@@ -3,6 +3,7 @@
 package ray.eldath.ixp.main
 
 import ray.eldath.ixp.tool.copyFileToDirectory
+import ray.eldath.ixp.tool.openOrCreateDirectories
 import ray.eldath.ixp.util.VERSION
 import java.nio.file.Files
 import java.nio.file.Path
@@ -19,11 +20,7 @@ fun main(args: Array<String>) {
 	val sourceFile = inputValidPath(scanner, { path -> Files.exists(path) && path.toString().endsWith(".xml") })
 
 	println("Please input the target directory you want to move in: ")
-	val targetPath = Paths.get(scanner.nextLine())
-	if (targetPath != null && !Files.exists(targetPath)) {
-		println("Directory $targetPath not exist, created.")
-		Files.createDirectories(targetPath)
-	}
+	val targetPath = Paths.get(scanner.nextLine())?.openOrCreateDirectories()
 
 	println("Now parsing file $sourceFile ...")
 	val playlists = parse(sourceFile)
@@ -56,10 +53,7 @@ fun main(args: Array<String>) {
 
 		val playlistPath = Paths.get("$targetPath/$name")
 
-		if (!Files.exists(playlistPath)) {
-			println("\t\tDirectory for `$name` not exist, created.")
-			Files.createDirectories(playlistPath)
-		}
+		playlistPath.openOrCreateDirectories("\t\t")
 		println("\t\tCopying out now... This may takes few minutes...")
 
 		val points = ArrayList<Int>()
@@ -79,7 +73,7 @@ fun main(args: Array<String>) {
 				System.err.println("\t\tError ` ${e.message}` occurred. Still copying.")
 				errors++
 			}
-			if (points.contains(index))
+			if (index in points)
 				println("\t\t(${percentFormatter.format(index / total)}) finished. Still copying.")
 		}
 		println("\t\tFinish copied items in `$name`.")

@@ -20,6 +20,6 @@ The release file will parse the XML file, and **copy** music file from specified
 ## Contributing
 1. Star this project.
 2. Fork and pull request.
-3. New [issue](https://github.com/ProgramLeague/iTunesXMLParser/issues).
+3. Create [issue](https://github.com/ProgramLeague/iTunesXMLParser/issues).
 
 ©. Powered by [Ray Eldath](https://stackoverflow.com/users/8711684/ray-eldath).
