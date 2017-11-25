@@ -11,6 +11,7 @@ import java.nio.file.Paths
 import java.text.NumberFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.streams.toList
 
 fun main(args: Array<String>) {
 	val scanner = Scanner(System.`in`)
@@ -68,7 +69,7 @@ fun main(args: Array<String>) {
 
 		for ((index, item) in items.withIndex()) {
 			try {
-				copyFileToDirectory(item.path, playlistPath)
+				copyFileToDirectory(item.path, playlistPath, Files.list(playlistPath).toList())
 			} catch (e: Exception) {
 				System.err.println("\t\tError ` ${e.message}` occurred. Still copying.")
 				errors++
