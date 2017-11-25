@@ -2,13 +2,10 @@
 
 package ray.eldath.ixp.main
 
-import ray.eldath.ixp.tool.FindDifference
-import ray.eldath.ixp.tool.copyFileToDirectory
-import ray.eldath.ixp.tool.openOrCreateDirectories
+import ray.eldath.ixp.tool.*
 import ray.eldath.ixp.util.Constants
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
+import ray.eldath.ixp.util.Dict
+import java.nio.file.*
 import java.text.NumberFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -27,8 +24,7 @@ fun main(args: Array<String>) {
 	val playlists = parse(sourceFile)
 
 	println("Found ${playlists.size} playlist(s): ")
-	for ((index, playlist) in playlists.withIndex())
-		println("\t${index + 1}. ${playlist.name} has ${playlist.items.size} items")
+	playlists.forEachIndexed { index, playlist -> println("\t${index + 1}. ${playlist.name} has ${playlist.items.size} items") }
 
 	// input ID of playlist(s)
 	println("Input those playlist(s) you want to copy out, 0 for all, separated with comma(,): ")
@@ -37,7 +33,7 @@ fun main(args: Array<String>) {
 	if (toHandleString.contentEquals("0"))
 		toHandle.addAll(playlists.indices)
 	else
-		toHandle.addAll(toHandleString.trim().replace(" ", "").split(",").map { it.toInt() })
+		toHandle.addAll(toHandleString.trim().replace(" ", "").split(",").map(String::toInt))
 
 	// confirmed
 	println("Will copy out playlist No. `${toHandle.joinToString()}`, continue? (y for yes): ")
@@ -76,7 +72,7 @@ fun main(args: Array<String>) {
 		points.add((step * 2).toInt())
 		points.add((step * 3).toInt())
 
-		for ((index, item) in items.withIndex()) {
+		items.forEachIndexed { index, item ->
 			ignoreException(
 					{ copyFileToDirectory(item.path, playlistPath, Files.list(playlistPath).toList()) },
 					{ "\t\tError ` ${it.message}` occurred. Still copying." },
@@ -90,7 +86,7 @@ fun main(args: Array<String>) {
 		if (same) {
 			println("Finding difference between the folder $playlistPath and the playlist $name...")
 			// A: playlist, B: folder
-			val difference = FindDifference.findDifference(items.map { it.path }, Files.list(playlistPath).toList())
+			val difference = FindDifference.findDifference(items.map(Dict::path), Files.list(playlistPath).toList())
 			print("Found ${difference.moreInA.size} file(s) exist in the playlist but not in the folder, ")
 			println("found ${difference.moreInB.size} file(s) exist in the folder but not in the playlist.")
 			println("Now differentiating...")
@@ -109,18 +105,17 @@ fun main(args: Array<String>) {
 		}
 	}
 
-	println("Finished all copying task, ${if (errors == 0) "no" else errors.toString()} error(s) occurred.")
+	println("Finished all copying task, ${if (errors == 0) "no" else "$errors"} error(s) occurred.")
 	println("Type ANYTHING and type ENTER to exit...")
 	scanner.next()
 }
 
-inline fun ignoreException(lambda: () -> Unit, message: (Exception) -> String, operation: () -> Unit = {}) {
-	try {
-		lambda.invoke()
-	} catch (e: Exception) {
-		System.err.println(message(e))
-		operation.invoke()
-	}
+inline fun ignoreException(lambda: () -> Unit, message: (Exception) -> String) = ignoreException(lambda, message) { }
+inline fun ignoreException(lambda: () -> Unit, message: (Exception) -> String, operation: () -> Unit) = try {
+	lambda()
+} catch (e: Exception) {
+	System.err.println(message(e))
+	operation.invoke()
 }
 
 private inline fun inputValidPath(scanner: Scanner, condition: (Path) -> Boolean): Path {
