@@ -2,9 +2,10 @@
 
 package ray.eldath.ixp.main
 
+import ray.eldath.ixp.tool.FindDifference
 import ray.eldath.ixp.tool.copyFileToDirectory
 import ray.eldath.ixp.tool.openOrCreateDirectories
-import ray.eldath.ixp.util.VERSION
+import ray.eldath.ixp.util.Constants
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -15,11 +16,10 @@ import kotlin.streams.toList
 
 fun main(args: Array<String>) {
 	val scanner = Scanner(System.`in`)
-	println("iTunesXMLParser - v$VERSION")
+	println("iTunesXMLParser - v${Constants.VERSION}")
 
 	println("Please input the location of the XML file you want to parse: ")
 	val sourceFile = inputValidPath(scanner, { path -> Files.exists(path) && path.toString().endsWith(".xml") })
-
 	println("Please input the target directory you want to move in: ")
 	val targetPath = Paths.get(scanner.nextLine())?.openOrCreateDirectories()
 
@@ -29,6 +29,8 @@ fun main(args: Array<String>) {
 	println("Found ${playlists.size} playlist(s): ")
 	for ((index, playlist) in playlists.withIndex())
 		println("\t${index + 1}. ${playlist.name} has ${playlist.items.size} items")
+
+	// input ID of playlist(s)
 	println("Input those playlist(s) you want to copy out, 0 for all, separated with comma(,): ")
 	val toHandleString = scanner.nextLine()
 	val toHandle = ArrayList<Int>()
@@ -37,12 +39,19 @@ fun main(args: Array<String>) {
 	else
 		toHandle.addAll(toHandleString.trim().replace(" ", "").split(",").map { it.toInt() })
 
+	// confirmed
 	println("Will copy out playlist No. `${toHandle.joinToString()}`, continue? (y for yes): ")
 	val yes = scanner.nextLine()
-	if (!(yes.contentEquals("y") || yes.contentEquals("yes"))) {
+	if (!(yes.equals("y", true) || yes.equals("yes", true))) {
 		println("Canceled.")
 		System.exit(0)
 	}
+
+	// make exactly the same?
+	println("Do you want to ensure that XML files and folders are exactly the same? (Not only copy out the missing files, but also deletes the extra files in the folder) (y for yes, other for no): ")
+	val sameString = scanner.nextLine()
+	val same = sameString.equals("y", true) || sameString.equals("yes", true)
+
 	println("Now copy out musics in ${toHandle.size} playlists into `$targetPath`...")
 	var errors = 0
 	for (handling in toHandle) {
@@ -68,20 +77,50 @@ fun main(args: Array<String>) {
 		points.add((step * 3).toInt())
 
 		for ((index, item) in items.withIndex()) {
-			try {
-				copyFileToDirectory(item.path, playlistPath, Files.list(playlistPath).toList())
-			} catch (e: Exception) {
-				System.err.println("\t\tError ` ${e.message}` occurred. Still copying.")
-				errors++
-			}
+			ignoreException(
+					{ copyFileToDirectory(item.path, playlistPath, Files.list(playlistPath).toList()) },
+					{ "\t\tError ` ${it.message}` occurred. Still copying." },
+					{ errors++ }
+			)
 			if (index in points)
 				println("\t\t(${percentFormatter.format(index / total)}) finished. Still copying.")
 		}
 		println("\t\tFinish copied items in `$name`.")
+
+		if (same) {
+			println("Finding difference between the folder $playlistPath and the playlist $name...")
+			// A: playlist, B: folder
+			val difference = FindDifference.findDifference(items.map { it.path }, Files.list(playlistPath).toList())
+			print("Found ${difference.moreInA.size} file(s) exist in the playlist but not in the folder, ")
+			println("found ${difference.moreInB.size} file(s) exist in the folder but not in the playlist.")
+			println("Now differentiating...")
+
+			for (element in difference.moreInA)
+				ignoreException(
+						{ copyFileToDirectory(element, playlistPath) },
+						{ "\t\tError ` ${it.message}` occurred. Still copying." }
+				)
+
+			for (element in difference.moreInB)
+				ignoreException(
+						{ copyFileToDirectory(element, playlistPath) },
+						{ "\t\tError ` ${it.message}` occurred. Still copying." }
+				)
+		}
 	}
+
 	println("Finished all copying task, ${if (errors == 0) "no" else errors.toString()} error(s) occurred.")
 	println("Type ANYTHING and type ENTER to exit...")
 	scanner.next()
+}
+
+inline fun ignoreException(lambda: () -> Unit, message: (Exception) -> String, operation: () -> Unit = {}) {
+	try {
+		lambda.invoke()
+	} catch (e: Exception) {
+		System.err.println(message(e))
+		operation.invoke()
+	}
 }
 
 private inline fun inputValidPath(scanner: Scanner, condition: (Path) -> Boolean): Path {

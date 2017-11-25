@@ -1,3 +1,5 @@
+package ray.eldath.ixp.test
+
 import ray.eldath.ixp.tool.openOrCreateDirectories
 import ray.eldath.ixp.tool.openOrCreateFile
 import java.io.FileInputStream

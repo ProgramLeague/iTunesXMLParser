@@ -1,3 +1,5 @@
+package ray.eldath.ixp.test
+
 import org.eclipse.jetty.util.UrlEncoded
 
 object URLEncodedTest {
