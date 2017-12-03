@@ -2,6 +2,7 @@
 
 package ray.eldath.ixp.main
 
+import org.eclipse.jetty.util.UrlEncoded
 import org.jdom2.Element
 import org.jdom2.input.SAXBuilder
 import org.jdom2.xpath.XPathFactory
@@ -47,11 +48,13 @@ private fun parseElementString(element: Element, key: String) = parseElement(ele
 
 private val emptyPath: Path = Paths.get("")
 
+private val add: String = UrlEncoded.encodeString("{{<>ADD<>}}")
+
 private fun parseLocation(location: String): Path = when {
 	location.startsWith("http") -> emptyPath
 	location.startsWith("file://localhost/") -> {
-		val tmp = location.replace("file://localhost/", "").replace("+", "{{<>ADD<>}}")
-		Paths.get(tmp.replace("{{<>ADD<>}}", "+"))
+		val tmp = UrlEncoded.decodeString(location.replace("file://localhost/", "").replace("+", "{{<>ADD<>}}"))
+		Paths.get(tmp.replace(add, "+"))
 	}
 	else -> emptyPath
 }

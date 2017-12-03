@@ -2,10 +2,14 @@
 
 package ray.eldath.ixp.main
 
-import ray.eldath.ixp.tool.*
+import ray.eldath.ixp.tool.FindDifference
+import ray.eldath.ixp.tool.copyFileToDirectory
+import ray.eldath.ixp.tool.openOrCreateDirectories
 import ray.eldath.ixp.util.Constants
 import ray.eldath.ixp.util.Dict
-import java.nio.file.*
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.text.NumberFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -47,6 +51,8 @@ fun main(args: Array<String>) {
 	println("Do you want to ensure that XML files and folders are exactly the same? (Not only copy out the missing files, but also deletes the extra files in the folder) (y for yes, other for no): ")
 	val sameString = scanner.nextLine()
 	val same = sameString.equals("y", true) || sameString.equals("yes", true)
+	if (!same)
+		println("Cancel differentiate.")
 
 	println("Now copy out musics in ${toHandle.size} playlists into `$targetPath`...")
 	var errors = 0
