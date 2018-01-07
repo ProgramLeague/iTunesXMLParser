@@ -48,13 +48,11 @@ private fun parseElementString(element: Element, key: String) = parseElement(ele
 
 private val emptyPath: Path = Paths.get("")
 
-private val add: String = UrlEncoded.encodeString("{{ADD}}")
-
 private fun parseLocation(location: String): Path = when {
 	location.startsWith("http") -> emptyPath
 	location.startsWith("file://localhost/") -> {
 		val tmp = UrlEncoded.decodeString(location.replace("file://localhost/", "").replace("+", "{{ADD}}"))
-		Paths.get(tmp.replace(add, "+"))
+		Paths.get(tmp.replace("{{ADD}}", "+"))
 	}
 	else -> emptyPath
 }
