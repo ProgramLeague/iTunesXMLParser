@@ -47,13 +47,6 @@ fun main(args: Array<String>) {
 		System.exit(0)
 	}
 
-	// make exactly the same?
-	println("Do you want to ensure that XML files and folders are exactly the same? (Not only copy out the missing files, but also deletes the extra files in the folder) (y for yes, other for no): ")
-	val sameString = scanner.nextLine()
-	val same = sameString.equals("y", true) || sameString.equals("yes", true)
-	if (!same)
-		println("Cancel differentiate.")
-
 	println("Now copy out musics in ${toHandle.size} playlists into `$targetPath`...")
 	var errors = 0
 	for (handling in toHandle) {
@@ -88,27 +81,6 @@ fun main(args: Array<String>) {
 				println("\t\t(${percentFormatter.format(index / total)}) finished. Still copying.")
 		}
 		println("\t\tFinish copied items in `$name`.")
-
-		if (same) {
-			println("Finding difference between the folder $playlistPath and the playlist $name...")
-			// A: playlist, B: folder
-			val difference = FindDifference.findDifference(items.map(Dict::path), Files.list(playlistPath).toList())
-			print("Found ${difference.moreInA.size} file(s) exist in the playlist but not in the folder, ")
-			println("found ${difference.moreInB.size} file(s) exist in the folder but not in the playlist.")
-			println("Now differentiating...")
-
-			for (element in difference.moreInA)
-				ignoreException(
-						{ copyFileToDirectory(element, playlistPath) },
-						{ "\t\tError ` ${it.message}` occurred. Still copying." }
-				)
-
-			for (element in difference.moreInB)
-				ignoreException(
-						{ copyFileToDirectory(element, playlistPath) },
-						{ "\t\tError ` ${it.message}` occurred. Still copying." }
-				)
-		}
 	}
 
 	println("Finished all copying task, ${if (errors == 0) "no" else "$errors"} error(s) occurred.")
@@ -116,7 +88,6 @@ fun main(args: Array<String>) {
 	scanner.next()
 }
 
-inline fun ignoreException(lambda: () -> Unit, message: (Exception) -> String) = ignoreException(lambda, message) { }
 inline fun ignoreException(lambda: () -> Unit, message: (Exception) -> String, operation: () -> Unit) = try {
 	lambda()
 } catch (e: Exception) {
